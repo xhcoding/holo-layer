@@ -33,6 +33,7 @@ from plugin.place_info import PlaceInfo
 from plugin.window_border import WindowBorder
 from plugin.window_number import WindowNumber
 from plugin.window_screenshot import WindowScreenshot
+from plugin.highlight_column import HighlightColumn
 from utils import *
 
 
@@ -123,6 +124,10 @@ class HoloLayer:
     def take_screenshot(self):
         self.holo_window.window_screenshot.take_screenshot(self.screenshot_window_info, self.emacs_frame_info)
 
+    @PostGui()
+    def toggle_highlight_column(self):
+        self.holo_window.toggle_highlight_column()
+
     def cleanup(self):
         """Do some cleanup before exit python process."""
         close_epc_client()
@@ -143,6 +148,7 @@ class HoloWindow(QWidget):
         self.window_screenshot = WindowScreenshot()
         self.cursor_animation = CursorAnimation(self)
         self.place_info = PlaceInfo()
+        self.highlight_column = HighlightColumn()
 
         self.show_window_number_flag = False
 
@@ -192,6 +198,7 @@ class HoloWindow(QWidget):
 
         if self.show_window_number_flag:
             self.window_number.draw(painter, self.window_info)
+        self.highlight_column.draw(painter, self.window_info, self.emacs_frame_info)
 
     def update_place_info(self, word):
         word = word.lower()
@@ -211,8 +218,15 @@ class HoloWindow(QWidget):
             window_info[i] = [int(x), int(y), int(w), int(h), is_active_window]
         self.window_info = window_info
 
+        need_call_update = False
         if not self.cursor_animation.update_info(cursor_info, self.emacs_frame_info):
             # skip update if cursor position is changed.
+            need_call_update = True
+
+        if not self.highlight_column.update_info(cursor_info, self.emacs_frame_info):
+            need_call_update = True
+
+        if need_call_update:
             self.update()
 
     def show_window_number(self):
@@ -223,6 +237,9 @@ class HoloWindow(QWidget):
     def hide_window_number(self):
         self.show_window_number_flag = False
         self.update()
+        
+    def toggle_highlight_column(self):
+        self.highlight_column.enable_highlight_column = not self.highlight_column.enable_highlight_column
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

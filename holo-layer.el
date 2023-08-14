@@ -661,6 +661,10 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (interactive)
   (holo-layer-call-async "take_window_screenshot" (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window))))
 
+(defun holo-layer-toggle-highlight-column()
+  (interactive)
+  (holo-layer-call-async "toggle_highlight_column"))
+
 (provide 'holo-layer)
 
 ;;; holo-layer.el ends here
